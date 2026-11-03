@@ -176,3 +176,24 @@ public:
         result /= scalar;
         return result;
     }
+     private:
+         void CheckSize() const {
+             if (rows_ == 0 || cols_ == 0) {
+                 throw std::invalid_argument("Matrix size must be positive");
+             }
+         }
+
+         void CheckIndex(std::size_t row, std::size_t col) const {
+             if (row >= rows_ || col >= cols_) {
+                 throw std::out_of_range("Matrix index out of range");
+             }
+         }
+         std::size_t rows_;
+         std::size_t cols_;
+         T* data_;
+};
+void CheckSameSize(const Matrix& other) const {
+    if (rows_ != other.rows_ || cols_ != other.cols_) {
+        throw std::invalid_argument("Matrices have different sizes");
+    }
+}
