@@ -275,3 +275,91 @@ void DecomposeLu(const Matrix<T>& matrix, Matrix<T>& lower, Matrix<T>& upper) {
         }
     }
 }
+template <typename T>
+void DemonstrateMatrix(const std::string& name, const T& lower,
+    const T& upper) {
+    std::cout << "===== " << name << " =====\n";
+
+    Matrix<T> filled(2, 3, T(1));
+    Matrix<T> a(3, 3, lower, upper);
+    Matrix<T> b(3, 3, lower, upper);
+    std::cout << "Filled:\n" << filled << "A:\n" << a << "B:\n" << b;
+
+    Matrix<T> copy(a);
+    copy(0, 0) = upper;
+    std::cout << "Copy of A with changed (0, 0):\n" << copy;
+    copy = b;
+    std::cout << "Copy after assignment of B:\n" << copy;
+
+    std::cout << "A + B:\n" << a + b << "A - B:\n" << a - b;
+    std::cout << "A * B:\n" << a * b;
+
+    const T scalar = T(2);
+    std::cout << "A * 2:\n" << a * scalar << "2 * A:\n" << scalar * a;
+    std::cout << "A / 2:\n" << a / scalar;
+    std::cout << "Trace of A: " << a.Trace() << '\n';
+    std::cout << "A == A: " << (a == a) << ", A != B: " << (a != b) << '\n';
+
+    try {
+        Matrix<T> sum = filled + a;
+    }
+    catch (const std::invalid_argument& error) {
+        std::cout << "Error: " << error.what() << '\n';
+    }
+    try {
+        std::cout << filled(5, 5) << '\n';
+    }
+    catch (const std::out_of_range& error) {
+        std::cout << "Error: " << error.what() << '\n';
+    }
+    try {
+        std::cout << filled.Trace() << '\n';
+    }
+    catch (const std::invalid_argument& error) {
+        std::cout << "Error: " << error.what() << '\n';
+    }
+    try {
+        Matrix<T> quotient = a / T();
+    }
+    catch (const std::invalid_argument& error) {
+        std::cout << "Error: " << error.what() << '\n';
+    }
+    std::cout << '\n';
+}
+template <typename T>
+void DemonstrateLu(const std::string& name, const T& lower_bound,
+    const T& upper_bound) {
+    std::cout << "===== LU, " << name << " =====\n";
+    Matrix<T> a(4, 4, lower_bound, upper_bound);
+    Matrix<T> lower(1, 1, T());
+    Matrix<T> upper(1, 1, T());
+    std::cout << "A:\n" << a;
+    try {
+        DecomposeLu(a, lower, upper);
+        std::cout << "L:\n" << lower << "U:\n" << upper;
+        std::cout << "L * U:\n" << lower * upper;
+        std::cout << "L * U == A: " << (lower * upper == a) << '\n';
+    }
+    catch (const std::domain_error& error) {
+        std::cout << "Error: " << error.what() << '\n';
+    }
+    std::cout << '\n';
+}
+
+int main() {
+    DemonstrateMatrix<int>("int", 1, 9);
+    DemonstrateMatrix<float>("float", -5.0F, 5.0F);
+    DemonstrateMatrix<double>("double", -5.0, 5.0);
+    DemonstrateMatrix<std::complex<float>>("complex<float>",
+        std::complex<float>(-5.0F, -5.0F),
+        std::complex<float>(5.0F, 5.0F));
+    DemonstrateMatrix<std::complex<double>>("complex<double>",
+        std::complex<double>(-5.0, -5.0),
+        std::complex<double>(5.0, 5.0));
+
+    DemonstrateLu<double>("double", -5.0, 5.0);
+    DemonstrateLu<std::complex<double>>("complex<double>",
+        std::complex<double>(-5.0, -5.0),
+        std::complex<double>(5.0, 5.0));
+    return 0;
+}
