@@ -116,3 +116,63 @@ public:
         CheckIndex(row, col);
         return data_[row * cols_ + col];
     }
+        Matrix & operator+=(const Matrix & other) {
+        CheckSameSize(other);
+        for (std::size_t i = 0; i < rows_ * cols_; ++i) {
+            data_[i] += other.data_[i];
+        }
+        return *this;
+    }
+
+    Matrix& operator-=(const Matrix& other) {
+        CheckSameSize(other);
+        for (std::size_t i = 0; i < rows_ * cols_; ++i) {
+            data_[i] -= other.data_[i];
+        }
+        return *this;
+    }
+
+    Matrix& operator*=(const T& scalar) {
+        for (std::size_t i = 0; i < rows_ * cols_; ++i) {
+            data_[i] *= scalar;
+        }
+        return *this;
+    }
+
+    Matrix& operator/=(const T& scalar) {
+        if (scalar == T()) {
+            throw std::invalid_argument("Division by zero");
+        }
+        for (std::size_t i = 0; i < rows_ * cols_; ++i) {
+            data_[i] /= scalar;
+        }
+        return *this;
+    }
+
+    Matrix operator+(const Matrix& other) const {
+        Matrix result(*this);
+        result += other;
+        return result;
+    }
+
+    Matrix operator-(const Matrix& other) const {
+        Matrix result(*this);
+        result -= other;
+        return result;
+    }
+
+    Matrix operator*(const T& scalar) const {
+        Matrix result(*this);
+        result *= scalar;
+        return result;
+    }
+
+    friend Matrix operator*(const T& scalar, const Matrix& matrix) {
+        return matrix * scalar;
+    }
+
+    Matrix operator/(const T& scalar) const {
+        Matrix result(*this);
+        result /= scalar;
+        return result;
+    }
