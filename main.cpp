@@ -139,6 +139,12 @@ public:
         return *this;
     }
 
+    Matrix operator/(const T& scalar) const {
+        Matrix result(*this);
+        result /= scalar;
+        return result;
+    }
+
     Matrix& operator/=(const T& scalar) {
         if (scalar == T()) {
             throw std::invalid_argument("Division by zero");
@@ -171,71 +177,71 @@ public:
         return matrix * scalar;
     }
 
-    Matrix operator/(const T& scalar) const {
-        Matrix result(*this);
-        result /= scalar;
-        return result;
-    }
-     private:
-         void CheckSize() const {
-             if (rows_ == 0 || cols_ == 0) {
-                 throw std::invalid_argument("Matrix size must be positive");
-             }
-         }
-
-         void CheckIndex(std::size_t row, std::size_t col) const {
-             if (row >= rows_ || col >= cols_) {
-                 throw std::out_of_range("Matrix index out of range");
-             }
-         }
-         std::size_t rows_;
-         std::size_t cols_;
-         T* data_;
-};
-void CheckSameSize(const Matrix& other) const {
-    if (rows_ != other.rows_ || cols_ != other.cols_) {
-        throw std::invalid_argument("Matrices have different sizes");
-    }
-}
-Matrix operator*(const Matrix& other) const {
-    if (cols_ != other.rows_) {
-        throw std::invalid_argument("Wrong sizes for matrix multiplication");
-    }
-    Matrix result(rows_, other.cols_, T());
-    for (std::size_t i = 0; i < rows_; ++i) {
-        for (std::size_t j = 0; j < other.cols_; ++j) {
-            for (std::size_t k = 0; k < cols_; ++k) {
-                result(i, j) += (*this)(i, k) * other(k, j);
+    Matrix operator*(const Matrix& other) const {
+        if (cols_ != other.rows_) {
+            throw std::invalid_argument("Wrong sizes for matrix multiplication");
+        }
+        Matrix result(rows_, other.cols_, T());
+        for (std::size_t i = 0; i < rows_; ++i) {
+            for (std::size_t j = 0; j < other.cols_; ++j) {
+                for (std::size_t k = 0; k < cols_; ++k) {
+                    result(i, j) += (*this)(i, k) * other(k, j);
+                }
             }
         }
+        return result;
     }
-    return result;
-}
 
-T Trace() const {
-    if (rows_ != cols_) {
-        throw std::invalid_argument("Matrix is not square");
+    T Trace() const {
+        if (rows_ != cols_) {
+            throw std::invalid_argument("Matrix is not square");
+        }
+        T sum = T();
+        for (std::size_t i = 0; i < rows_; ++i) {
+            sum += (*this)(i, i);
+        }
+        return sum;
     }
-    T sum = T();
-    for (std::size_t i = 0; i < rows_; ++i) {
-        sum += (*this)(i, i);
-    }
-    return sum;
-}
 
-bool operator==(const Matrix& other) const {
-    if (rows_ != other.rows_ || cols_ != other.cols_) {
-        return false;
-    }
-    for (std::size_t i = 0; i < rows_ * cols_; ++i) {
-        if (AbsValue(data_[i] - other.data_[i]) > kEpsilon) {
+    bool operator==(const Matrix& other) const {
+        if (rows_ != other.rows_ || cols_ != other.cols_) {
             return false;
         }
+        for (std::size_t i = 0; i < rows_ * cols_; ++i) {
+            if (AbsValue(data_[i] - other.data_[i]) > kEpsilon) {
+                return false;
+            }
+        }
+        return true;
     }
-    return true;
-}
 
-bool operator!=(const Matrix& other) const { return !(*this == other); }
+    bool operator!=(const Matrix& other) const { return !(*this == other); }
+
+private:
+    void CheckSize() const {
+        if (rows_ == 0 || cols_ == 0) {
+            throw std::invalid_argument("Matrix size must be positive");
+        }
+    }
+
+    void CheckIndex(std::size_t row, std::size_t col) const {
+        if (row >= rows_ || col >= cols_) {
+            throw std::out_of_range("Matrix index out of range");
+        }
+    }
+
+    void CheckSameSize(const Matrix& other) const {
+        if (rows_ != other.rows_ || cols_ != other.cols_) {
+            throw std::invalid_argument("Matrices have different sizes");
+        }
+    }
+
+    std::size_t rows_;
+    std::size_t cols_;
+    T* data_;
+};
+
+    
 template <typename T>
 std::ostream& operator<<(std::ostream& out, const Matrix<T>& matrix) {
     for (std::size_t i = 0; i < matrix.GetRows(); ++i) {
