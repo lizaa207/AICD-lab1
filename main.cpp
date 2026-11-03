@@ -197,3 +197,52 @@ void CheckSameSize(const Matrix& other) const {
         throw std::invalid_argument("Matrices have different sizes");
     }
 }
+Matrix operator*(const Matrix& other) const {
+    if (cols_ != other.rows_) {
+        throw std::invalid_argument("Wrong sizes for matrix multiplication");
+    }
+    Matrix result(rows_, other.cols_, T());
+    for (std::size_t i = 0; i < rows_; ++i) {
+        for (std::size_t j = 0; j < other.cols_; ++j) {
+            for (std::size_t k = 0; k < cols_; ++k) {
+                result(i, j) += (*this)(i, k) * other(k, j);
+            }
+        }
+    }
+    return result;
+}
+
+T Trace() const {
+    if (rows_ != cols_) {
+        throw std::invalid_argument("Matrix is not square");
+    }
+    T sum = T();
+    for (std::size_t i = 0; i < rows_; ++i) {
+        sum += (*this)(i, i);
+    }
+    return sum;
+}
+
+bool operator==(const Matrix& other) const {
+    if (rows_ != other.rows_ || cols_ != other.cols_) {
+        return false;
+    }
+    for (std::size_t i = 0; i < rows_ * cols_; ++i) {
+        if (AbsValue(data_[i] - other.data_[i]) > kEpsilon) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool operator!=(const Matrix& other) const { return !(*this == other); }
+template <typename T>
+std::ostream& operator<<(std::ostream& out, const Matrix<T>& matrix) {
+    for (std::size_t i = 0; i < matrix.GetRows(); ++i) {
+        for (std::size_t j = 0; j < matrix.GetCols(); ++j) {
+            out << matrix(i, j) << '\t';
+        }
+        out << '\n';
+    }
+    return out;
+}
