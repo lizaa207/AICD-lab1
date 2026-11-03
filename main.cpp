@@ -246,3 +246,32 @@ std::ostream& operator<<(std::ostream& out, const Matrix<T>& matrix) {
     }
     return out;
 }
+template <typename T>
+void DecomposeLu(const Matrix<T>& matrix, Matrix<T>& lower, Matrix<T>& upper) {
+    static_assert(!std::is_integral<T>::value,
+        "LU decomposition requires non-integer type");
+    if (matrix.GetRows() != matrix.GetCols()) {
+        throw std::invalid_argument("Matrix is not square");
+    }
+    const std::size_t size = matrix.GetRows();
+    lower = Matrix<T>(size, size, T());
+    upper = matrix;
+    for (std::size_t i = 0; i < size; ++i) {
+        lower(i, i) = T(1);
+    }
+
+    for (std::size_t k = 0; k < size; ++k) {
+        const T pivot = upper(k, k);
+        if (AbsValue(pivot) < Matrix<T>::kEpsilon) {
+            throw std::domain_error("Zero pivot, decomposition is impossible");
+        }
+        for (std::size_t i = k + 1; i < size; ++i) {
+            const T factor = upper(i, k) / pivot;
+            lower(i, k) = factor;
+            for (std::size_t j = k; j < size; ++j) {
+                upper(i, j) -= factor * upper(k, j);
+            }
+            upper(i, k) = T();
+        }
+    }
+}
